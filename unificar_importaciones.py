@@ -73,6 +73,18 @@ def clasificar_transporte(valor):
     else:
         return "No disponible"
 
+# Normalizador de unidad
+def normalizar_unidad(valor):
+    if pd.isna(valor):
+        return valor
+    valor_original = str(valor).strip().upper()
+    if "TONELADA" in valor_original:
+        return "TONELADAS"
+    elif any(p in valor_original for p in ["KILOGRAMO", "KILOGRAMO BRUTO", "KILOS NETOS", "KG"]):
+        return "KILOGRAMOS"
+    else:
+        return valor
+
 # Lector y procesador
 def leer_archivos_desde_carpeta():
     archivos = [f for f in os.listdir(CARPETA_DATOS) if f.endswith(('.xlsx', '.csv')) and f.startswith("detalle_")]
@@ -134,10 +146,16 @@ def leer_archivos_desde_carpeta():
             df["Aduana"] = df["Puerto"] if "Puerto" in df.columns else None
 
             # Unidad de medida
-            df["Unidad de Medida"] = df.get("Unidad", df.get("Unidad de Medida", None))
+            unidad_cruda = df.get("Unidad", df.get("Unidad de Medida", None))
+            df["Unidad de Medida"] = unidad_cruda.apply(normalizar_unidad) if unidad_cruda is not None else None
 
             # Cantidad Comercial
             df["Cantidad Comercial"] = df.get("Cantidad Comercial", df.get("Cantidad", None))
+
+            # Toneladas Finales
+            df["Toneladas Finales"] = None
+            df.loc[df["Unidad de Medida"] == "TONELADAS", "Toneladas Finales"] = df["Cantidad Comercial"]
+            df.loc[df["Unidad de Medida"] == "KILOGRAMOS", "Toneladas Finales"] = df["Cantidad Comercial"] / 1000
 
             # Asignar campos de costos por país
             mapeo = MAPEO_COSTOS_POR_PAIS.get(pais, {})
