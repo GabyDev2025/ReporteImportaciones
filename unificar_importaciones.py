@@ -98,19 +98,26 @@ def leer_archivos_desde_carpeta():
             df = pd.read_excel(ruta) if archivo.endswith(".xlsx") else pd.read_csv(ruta, encoding="utf-8")
             df["País"] = pais
 
-            # Fecha → convertir y formatear
+            # Fecha → convertir y formatear correctamente
             if "Fecha" in df.columns:
-                df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce").dt.strftime("%d/%m/%Y")
+                df["Fecha_dt"] = pd.to_datetime(df["Fecha"], errors="coerce")
             elif "Fecha Canc." in df.columns:
-                df["Fecha"] = pd.to_datetime(df["Fecha Canc."], errors="coerce").dt.strftime("%d/%m/%Y")
+                df["Fecha_dt"] = pd.to_datetime(df["Fecha Canc."], errors="coerce")
             else:
-                df["Fecha"] = None
+                df["Fecha_dt"] = pd.NaT
 
             # Año, Mes, Año.Mes
-            df["Año"] = pd.to_datetime(df["Fecha"], errors="coerce").dt.year
-            df["Mes"] = pd.to_datetime(df["Fecha"], errors="coerce").dt.month
-            df["Año.Mes"] = df["Año"].astype(str) + "." + df["Mes"].astype(str)
+            df["Año"] = df["Fecha_dt"].dt.year
+            df["Mes"] = df["Fecha_dt"].dt.month
+            df["Año.Mes"] = df["Fecha_dt"].dt.strftime("%Y.%m")
 
+            # Fecha formateada final
+            df["Fecha"] = df["Fecha_dt"].dt.strftime("%d/%m/%Y")
+
+            # Eliminar la columna temporal
+            df.drop(columns=["Fecha_dt"], inplace=True)
+
+            # Datos fijos
             df["Impo/Expo"] = "Importación"
             df["Producto"] = "Silicato de Sodio"
             df["Código NCM"] = "2839190000"
