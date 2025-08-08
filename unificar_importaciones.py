@@ -144,6 +144,8 @@ def leer_archivos_desde_carpeta():
                 df["Aduana"] = df["Aduana"]
             elif pais == "Chile" and "Aduana" in df.columns:
                 df["Aduana"] = df["Aduana"]
+            elif pais == "Colombia" and "Aduana" in df.columns:
+                df["Aduana"] = df["Aduana"]
             elif "Puerto" in df.columns:
                 df["Aduana"] = df["Puerto"]
             else:
@@ -218,6 +220,22 @@ def leer_archivos_desde_carpeta():
             # Para Chile: CIF (Unitario Tn) con U$S Unitario
             if pais == "Chile" and "U$S Unitario" in df.columns:
                 df["CIF (Unitario Tn)"] = df["U$S Unitario"]
+
+            # Para Colombia: Aduana con columna Aduana
+            if pais == "Colombia" and "Aduana" in df.columns:
+                df["Aduana"] = df["Aduana"]
+
+            # Para Colombia: Empresa Transportista con Transportista
+            if pais == "Colombia" and "Transportista" in df.columns:
+                df["Empresa Transportista"] = df["Transportista"]
+
+            # Para Colombia: CIF (Unitario Tn) con CIF Unitario
+            if pais == "Colombia" and "CIF Unitario" in df.columns:
+                df["CIF (Unitario Tn)"] = df["CIF Unitario"]
+
+            # Para Colombia: Descripción de Mercadería con Descripción Arancelaria
+            if pais == "Colombia" and "Descripción Arancelaria" in df.columns:
+                df["Descripción de Mercadería"] = df["Descripción Arancelaria"]
 
             # Columnas faltantes
             for col in COLUMNAS_OBJETIVO:
