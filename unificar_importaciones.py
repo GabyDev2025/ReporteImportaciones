@@ -110,7 +110,7 @@ def leer_archivos_desde_carpeta():
             df = pd.read_excel(ruta) if archivo.endswith(".xlsx") else pd.read_csv(ruta, encoding="utf-8")
             df["País"] = pais
 
-            # Fecha → convertir y formatear correctamente
+            # Fecha
             if "Fecha" in df.columns:
                 df["Fecha_dt"] = pd.to_datetime(df["Fecha"], errors="coerce")
             elif "Fecha Canc." in df.columns:
@@ -118,15 +118,10 @@ def leer_archivos_desde_carpeta():
             else:
                 df["Fecha_dt"] = pd.NaT
 
-            # Año, Mes, Año.Mes
             df["Año"] = df["Fecha_dt"].dt.year
             df["Mes"] = df["Fecha_dt"].dt.month
             df["Año.Mes"] = df["Fecha_dt"].dt.strftime("%Y.%m")
-
-            # Fecha formateada final
             df["Fecha"] = df["Fecha_dt"].dt.strftime("%d/%m/%Y")
-
-            # Eliminar la columna temporal
             df.drop(columns=["Fecha_dt"], inplace=True)
 
             # Datos fijos
@@ -143,7 +138,12 @@ def leer_archivos_desde_carpeta():
                 df["Vía Transporte"] = "No disponible"
 
             # Aduana
-            df["Aduana"] = df["Puerto"] if "Puerto" in df.columns else None
+            if pais == "Argentina" and "Aduana" in df.columns:
+                df["Aduana"] = df["Aduana"]
+            elif "Puerto" in df.columns:
+                df["Aduana"] = df["Puerto"]
+            else:
+                df["Aduana"] = None
 
             # Unidad de medida
             unidad_cruda = df.get("Unidad", df.get("Unidad de Medida", None))
@@ -157,7 +157,7 @@ def leer_archivos_desde_carpeta():
             df.loc[df["Unidad de Medida"] == "TONELADAS", "Toneladas Finales"] = df["Cantidad Comercial"]
             df.loc[df["Unidad de Medida"] == "KILOGRAMOS", "Toneladas Finales"] = df["Cantidad Comercial"] / 1000
 
-            # Asignar campos de costos por país
+            # Costos por país
             mapeo = MAPEO_COSTOS_POR_PAIS.get(pais, {})
             for col_final, col_fuente in mapeo.items():
                 if col_fuente in df.columns:
@@ -165,7 +165,20 @@ def leer_archivos_desde_carpeta():
                 else:
                     print(f"⚠️ '{col_fuente}' no encontrado en {archivo}")
 
-            # Asegurar columnas faltantes
+            # Cálculo FOB Unitario para Argentina si no existe
+            if pais == "Argentina":
+                if "FOB (Unitario Tn)" not in df.columns or df["FOB (Unitario Tn)"].isna().all():
+                    df["FOB (Unitario Tn)"] = df.apply(
+                        lambda row: round(row["FOB (Total)"] / row["Toneladas Finales"], 2)
+                        if pd.notna(row["FOB (Total)"]) and pd.notna(row["Toneladas Finales"]) and row["Toneladas Finales"] != 0
+                        else None,
+                        axis=1
+                    )
+                # Copiar columna "Descripción" a "Descripción de Mercadería"
+                if "Descripción" in df.columns:
+                    df["Descripción de Mercadería"] = df["Descripción"]
+
+            # Columnas faltantes
             for col in COLUMNAS_OBJETIVO:
                 if col not in df.columns:
                     df[col] = None
