@@ -140,6 +140,8 @@ def leer_archivos_desde_carpeta():
             # Aduana
             if pais == "Argentina" and "Aduana" in df.columns:
                 df["Aduana"] = df["Aduana"]
+            elif pais == "Bolivia" and "Aduana" in df.columns:
+                df["Aduana"] = df["Aduana"]
             elif "Puerto" in df.columns:
                 df["Aduana"] = df["Puerto"]
             else:
@@ -148,6 +150,10 @@ def leer_archivos_desde_carpeta():
             # Unidad de medida
             unidad_cruda = df.get("Unidad", df.get("Unidad de Medida", None))
             df["Unidad de Medida"] = unidad_cruda.apply(normalizar_unidad) if unidad_cruda is not None else None
+            
+            # Para Bolivia, forzar Unidad de Medida a "KILOGRAMOS"
+            if pais == "Bolivia":
+                df["Unidad de Medida"] = "KILOGRAMOS"
 
             # Cantidad Comercial
             df["Cantidad Comercial"] = df.get("Cantidad Comercial", df.get("Cantidad", None))
@@ -174,9 +180,26 @@ def leer_archivos_desde_carpeta():
                         else None,
                         axis=1
                     )
-                # Copiar columna "Descripción" a "Descripción de Mercadería"
-                if "Descripción" in df.columns:
-                    df["Descripción de Mercadería"] = df["Descripción"]
+
+            # Copiar descripción para Argentina
+            if pais == "Argentina" and "Descripción" in df.columns:
+                df["Descripción de Mercadería"] = df["Descripción"]
+
+            # Para Bolivia: copiar País de Proveedor a País de Procedencia
+            if pais == "Bolivia" and "País de Proveedor" in df.columns:
+                df["País de Procedencia"] = df["País de Proveedor"]
+
+            # Para Bolivia: completar Aduana con columna Aduana
+            if pais == "Bolivia" and "Aduana" in df.columns:
+                df["Aduana"] = df["Aduana"]
+
+            # Para Bolivia: completar Unidad de Medida con "KILOGRAMOS"
+            if pais == "Bolivia":
+                df["Unidad de Medida"] = "KILOGRAMOS"
+
+            # Para Bolivia: completar Descripción de Mercadería con Descripción Arancelaria
+            if pais == "Bolivia" and "Descripción Arancelaria" in df.columns:
+                df["Descripción de Mercadería"] = df["Descripción Arancelaria"]
 
             # Columnas faltantes
             for col in COLUMNAS_OBJETIVO:
