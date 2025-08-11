@@ -56,6 +56,7 @@ MAPEO_COSTOS_POR_PAIS = {
     },
     "Uruguay": {
         "FOB (Total)": "U$S FOB"
+        # No incluye FOB (Unitario Tn) aquí porque lo asignaremos directamente
     }
 }
 
@@ -219,7 +220,7 @@ def leer_archivos_desde_carpeta():
             if pais == "Paraguay" and "Descripción" in df.columns:
                 df["Descripción de Mercadería"] = df["Descripción"]
 
-            # PERÚ: agrego lo pedido sin modificar lo demás
+            # Perú
             if pais == "Perú":
                 if "Puerto" in df.columns:
                     df["Puerto de Embarque"] = df["Puerto"]
@@ -229,6 +230,10 @@ def leer_archivos_desde_carpeta():
                     df["CIF (Unitario Tn)"] = df["Unitario CIF"]
                 if "Descripción" in df.columns:
                     df["Descripción de Mercadería"] = df["Descripción"]
+
+            # Uruguay (nueva instrucción)
+            if pais == "Uruguay" and "Unitario VNA" in df.columns:
+                df["FOB (Unitario Tn)"] = df["Unitario VNA"]
 
             # Columnas faltantes
             for col in COLUMNAS_OBJETIVO:
@@ -261,4 +266,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
