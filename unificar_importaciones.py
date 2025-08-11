@@ -240,6 +240,9 @@ def leer_archivos_desde_carpeta():
                 if col not in df.columns:
                     df[col] = None
 
+            # COMPLETAR LA COLUMNA "Aplica?" POR FILA SEGÚN "Toneladas Finales"
+            df["Aplica?"] = df["Toneladas Finales"].apply(lambda x: "SI" if pd.notna(x) and x >= 1 else "NO")
+
             # Reordenar columnas
             df = df[COLUMNAS_OBJETIVO]
             dataframes.append(df)
