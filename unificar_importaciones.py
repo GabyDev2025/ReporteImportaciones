@@ -219,12 +219,23 @@ def leer_archivos_desde_carpeta():
             if pais == "Paraguay" and "Descripción" in df.columns:
                 df["Descripción de Mercadería"] = df["Descripción"]
 
+            # PERÚ: agrego lo pedido sin modificar lo demás
+            if pais == "Perú":
+                if "Puerto" in df.columns:
+                    df["Puerto de Embarque"] = df["Puerto"]
+                if "Transportista" in df.columns:
+                    df["Empresa Transportista"] = df["Transportista"]
+                if "Unitario CIF" in df.columns:
+                    df["CIF (Unitario Tn)"] = df["Unitario CIF"]
+                if "Descripción" in df.columns:
+                    df["Descripción de Mercadería"] = df["Descripción"]
+
             # Columnas faltantes
             for col in COLUMNAS_OBJETIVO:
                 if col not in df.columns:
                     df[col] = None
 
-            # Reordenar
+            # Reordenar columnas
             df = df[COLUMNAS_OBJETIVO]
             dataframes.append(df)
 
@@ -250,3 +261,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
