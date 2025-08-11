@@ -211,6 +211,14 @@ def leer_archivos_desde_carpeta():
             if pais == "Ecuador" and "Descripción Comercial" in df.columns:
                 df["Descripción de Mercadería"] = df["Descripción Comercial"]
 
+            # Paraguay
+            if pais == "Paraguay" and "Probable Importador" in df.columns:
+                df["Importador"] = df["Probable Importador"]
+            if pais == "Paraguay" and "Probable Proveedor" in df.columns:
+                df["Proveedor"] = df["Probable Proveedor"]
+            if pais == "Paraguay" and "Descripción" in df.columns:
+                df["Descripción de Mercadería"] = df["Descripción"]
+
             # Columnas faltantes
             for col in COLUMNAS_OBJETIVO:
                 if col not in df.columns:
