@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Dependencias y logs
+pip-log.txt
+pip-delete-this-directory.txt
+*.log
+
+# IDEs y editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Cachés y cobertura de tests
+.mypy_cache/
+.pytest_cache/
+.coverage
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Archivos de configuración local
+.env
+.env.*
+
+# Node.js / frontend
+frontend/node_modules/
+frontend/build/
+
+# Bloquea archivos generados por npm o yarn
+frontend/package-lock.json
+frontend/yarn.lock
+
+# Archivos temporales o swap
+*.swp
+*~
+
+# Carpeta __pycache__ en tests
+tests/__pycache__/
