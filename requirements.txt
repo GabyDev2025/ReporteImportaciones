@@ -1,5 +1,3 @@
-fastapi
-uvicorn[standard]
+flask
 pandas
 openpyxl
-python-multipart
