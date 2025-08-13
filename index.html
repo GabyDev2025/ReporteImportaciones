@@ -1,38 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Unificador de Importaciones</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unificador de Importaciones</title>
 </head>
 <body>
-    <h1>Subir archivos para unificar</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" name="files" multiple />
-        <button type="submit">Unificar y Descargar</button>
-    </form>
-    <script>
-        document.getElementById("uploadForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
+<h1>Unificador de Importaciones</h1>
+<form id="upload-form">
+    <label>Selecciona archivos Excel:</label>
+    <input type="file" id="files" name="files" multiple accept=".xlsx,.csv" required>
+    <button type="submit">Unificar y Descargar</button>
+</form>
 
-            const response = await fetch("/api/procesar", {
-                method: "POST",
-                body: formData
-            });
+<script>
+const form = document.getElementById('upload-form');
 
-            if (!response.ok) {
-                alert("Error procesando archivos");
-                return;
-            }
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const filesInput = document.getElementById('files');
+    if (filesInput.files.length === 0) {
+        alert("Selecciona al menos un archivo");
+        return;
+    }
 
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "importaciones_unificadas.xlsx";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
+    const formData = new FormData();
+    for (let file of filesInput.files) {
+        formData.append("files", file);
+    }
+
+    try {
+        const response = await fetch("/api/procesar_importaciones", {
+            method: "POST",
+            body: formData
         });
-    </script>
+
+        if (!response.ok) throw new Error("Error en el servidor");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "importaciones_unificadas.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        alert("Error: " + err.message);
+    }
+});
+</script>
 </body>
 </html>
+
