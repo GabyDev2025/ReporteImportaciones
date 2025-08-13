@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Unificador de Importaciones</title>
+</head>
+<body>
+    <h1>Subir archivos para unificar</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="files" multiple />
+        <button type="submit">Unificar y Descargar</button>
+    </form>
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            const response = await fetch("/api/procesar", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                alert("Error procesando archivos");
+                return;
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "importaciones_unificadas.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+    </script>
+</body>
+</html>
