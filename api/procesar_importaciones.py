@@ -110,6 +110,11 @@ def procesar_excel(df, pais):
     if pais == "Bolivia":
         df["Unidad de Medida"] = "KILOGRAMOS"
 
+    # Para Brasil, si la unidad dice "QUILOGRAMA LIQUIDO", normalizar a KILOGRAMOS
+    if pais == "Brasil":
+       df.loc[df["Unidad de Medida"].str.upper() == "QUILOGRAMA LIQUIDO", "Unidad de Medida"] = "KILOGRAMOS"
+
+
     # Cantidad Comercial
     df["Cantidad Comercial"] = df.get("Cantidad Comercial", df.get("Cantidad", None))
 
