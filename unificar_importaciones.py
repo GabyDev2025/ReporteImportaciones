@@ -56,7 +56,6 @@ MAPEO_COSTOS_POR_PAIS = {
     },
     "Uruguay": {
         "FOB (Total)": "U$S FOB"
-        # No incluye FOB (Unitario Tn) aquí porque lo asignaremos directamente
     }
 }
 
@@ -146,6 +145,10 @@ def leer_archivos_desde_carpeta():
             if pais == "Bolivia":
                 df["Unidad de Medida"] = "KILOGRAMOS"
 
+            # Para Brasil, si la unidad dice "QUILOGRAMA LIQUIDO", normalizar a KILOGRAMOS
+            if pais == "Brasil":
+                df.loc[df["Unidad de Medida"].str.upper() == "QUILOGRAMA LIQUIDO", "Unidad de Medida"] = "KILOGRAMOS"
+
             # Cantidad Comercial
             df["Cantidad Comercial"] = df.get("Cantidad Comercial", df.get("Cantidad", None))
 
@@ -231,7 +234,7 @@ def leer_archivos_desde_carpeta():
                 if "Descripción" in df.columns:
                     df["Descripción de Mercadería"] = df["Descripción"]
 
-            # Uruguay (nueva instrucción)
+            # Uruguay
             if pais == "Uruguay" and "Unitario VNA" in df.columns:
                 df["FOB (Unitario Tn)"] = df["Unitario VNA"]
 
