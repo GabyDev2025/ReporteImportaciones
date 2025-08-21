@@ -22,7 +22,8 @@ MAPEO_COSTOS_POR_PAIS = {
     "Argentina": { "FOB (Total)": "U$S FOB" },
     "Bolivia": {
         "FOB (Total)": "U$S FOB", "CIF (Total)": "U$S CIF",
-        "Flete (Total)": "Flete", "Seguro (Total)": "Seguro"
+        "Flete (Total)": "Flete", "Seguro (Total)": "Seguro", 
+        "CIF (Unitario Tn)": "U$S Unitario"
     },
     "Brasil": {
         "FOB (Total)": "U$S FOB", "FOB (Unitario Tn)": "Unitario FOB"
