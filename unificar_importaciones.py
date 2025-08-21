@@ -184,6 +184,8 @@ def leer_archivos_desde_carpeta():
                 df["País de Procedencia"] = df["País de Proveedor"]
             if pais == "Bolivia" and "Descripción Arancelaria" in df.columns:
                 df["Descripción de Mercadería"] = df["Descripción Arancelaria"]
+            if pais == "Bolivia" and "U$S Unitario" in df.columns:
+                df["CIF (Unitario Tn)"] = df["U$S Unitario"]
 
             # Chile
             if pais == "Chile" and "País de Adquisición" in df.columns:
