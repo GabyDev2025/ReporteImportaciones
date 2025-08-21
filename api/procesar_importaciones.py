@@ -80,24 +80,27 @@ def normalizar_unidad(valor):
         return valor
 
 def procesar_excel(df, pais):
-    # Fecha
+    # ==== FECHA ====
     if "Fecha" in df.columns:
         df["Fecha_dt"] = pd.to_datetime(df["Fecha"], errors="coerce")
+    elif "Fecha Canc." in df.columns:
+        df["Fecha_dt"] = pd.to_datetime(df["Fecha Canc."], errors="coerce")
     else:
         df["Fecha_dt"] = pd.NaT
+
     df["Año"] = df["Fecha_dt"].dt.year
     df["Mes"] = df["Fecha_dt"].dt.month
     df["Año.Mes"] = df["Fecha_dt"].dt.strftime("%Y.%m")
     df["Fecha"] = df["Fecha_dt"].dt.strftime("%d/%m/%Y")
     df.drop(columns=["Fecha_dt"], inplace=True)
 
-    # Datos fijos
+    # ==== DATOS FIJOS ====
     df["País"] = pais
     df["Impo/Expo"] = "Importación"
     df["Producto"] = "Silicato de Sodio"
     df["Código NCM"] = "2839190000"
 
-    # Transporte
+    # ==== TRANSPORTE ====
     if "Transporte" in df.columns:
         df["Vía Transporte"] = df["Transporte"].apply(clasificar_transporte)
     elif "Vía Transporte" in df.columns:
@@ -105,43 +108,105 @@ def procesar_excel(df, pais):
     else:
         df["Vía Transporte"] = "No disponible"
 
-    # Unidad de medida
+    # ==== UNIDAD DE MEDIDA ====
     unidad_cruda = df.get("Unidad", df.get("Unidad de Medida", None))
     df["Unidad de Medida"] = unidad_cruda.apply(normalizar_unidad) if unidad_cruda is not None else None
+
     if pais == "Bolivia":
         df["Unidad de Medida"] = "KILOGRAMOS"
 
-    # Para Brasil, si la unidad dice "QUILOGRAMA LIQUIDO", normalizar a KILOGRAMOS
     if pais == "Brasil":
-       df.loc[df["Unidad de Medida"].str.upper() == "QUILOGRAMA LIQUIDO", "Unidad de Medida"] = "KILOGRAMOS"
+        df.loc[df["Unidad de Medida"].str.upper() == "QUILOGRAMA LIQUIDO", "Unidad de Medida"] = "KILOGRAMOS"
 
-
-    # Cantidad Comercial
+    # ==== CANTIDAD Y TONELADAS ====
     df["Cantidad Comercial"] = df.get("Cantidad Comercial", df.get("Cantidad", None))
-
-    # Toneladas Finales
     df["Toneladas Finales"] = None
     df.loc[df["Unidad de Medida"] == "TONELADAS", "Toneladas Finales"] = df["Cantidad Comercial"]
     df.loc[df["Unidad de Medida"] == "KILOGRAMOS", "Toneladas Finales"] = df["Cantidad Comercial"] / 1000
 
-    # Costos por país
+    # ==== COSTOS POR PAÍS ====
     mapeo = MAPEO_COSTOS_POR_PAIS.get(pais, {})
     for col_final, col_fuente in mapeo.items():
         if col_fuente in df.columns:
             df[col_final] = df[col_fuente]
 
-    # FOB Unitario Argentina
+    # ==== BLOQUES POR PAÍS ====
     if pais == "Argentina":
+        # FOB unitario si no existe
         if "FOB (Unitario Tn)" not in df.columns or df["FOB (Unitario Tn)"].isna().all():
             df["FOB (Unitario Tn)"] = df.apply(
                 lambda row: round(row["FOB (Total)"] / row["Toneladas Finales"], 2)
                 if pd.notna(row["FOB (Total)"]) and pd.notna(row["Toneladas Finales"]) and row["Toneladas Finales"] != 0
-                else None, axis=1)
+                else None,
+                axis=1
+            )
+        if "Descripción" in df.columns:
+            df["Descripción de Mercadería"] = df["Descripción"]
 
-    # Columna Aplica?
+    elif pais == "Bolivia":
+        if "País de Proveedor" in df.columns:
+            df["País de Procedencia"] = df["País de Proveedor"]
+        if "Descripción Arancelaria" in df.columns:
+            df["Descripción de Mercadería"] = df["Descripción Arancelaria"]
+        if "U$S Unitario" in df.columns:
+            df["CIF (Unitario Tn)"] = df["U$S Unitario"]
+
+    elif pais == "Chile":
+        if "País de Adquisición" in df.columns:
+            df["País de Procedencia"] = df["País de Adquisición"]
+        if "Transportista" in df.columns:
+            df["Empresa Transportista"] = df["Transportista"]
+        if "U$S Unitario" in df.columns:
+            df["CIF (Unitario Tn)"] = df["U$S Unitario"]
+
+    elif pais == "Colombia":
+        if "Transportista" in df.columns:
+            df["Empresa Transportista"] = df["Transportista"]
+        if "CIF Unitario" in df.columns:
+            df["CIF (Unitario Tn)"] = df["CIF Unitario"]
+        if "Descripción Arancelaria" in df.columns:
+            df["Descripción de Mercadería"] = df["Descripción Arancelaria"]
+
+    elif pais == "Ecuador":
+        if "País de Embarque" in df.columns:
+            df["País de Procedencia"] = df["País de Embarque"]
+        if "Aduana" in df.columns:
+            df["Aduana"] = df["Aduana"]
+        if "Provincia" in df.columns:
+            df["Puerto de Embarque"] = df["Provincia"]
+        if "Transportista" in df.columns:
+            df["Empresa Transportista"] = df["Transportista"]
+        if "CIF Unitario" in df.columns:
+            df["CIF (Unitario Tn)"] = df["CIF Unitario"]
+        if "Descripción Comercial" in df.columns:
+            df["Descripción de Mercadería"] = df["Descripción Comercial"]
+
+    elif pais == "Paraguay":
+        if "Probable Importador" in df.columns:
+            df["Importador"] = df["Probable Importador"]
+        if "Probable Proveedor" in df.columns:
+            df["Proveedor"] = df["Probable Proveedor"]
+        if "Descripción" in df.columns:
+            df["Descripción de Mercadería"] = df["Descripción"]
+
+    elif pais == "Perú":
+        if "Puerto" in df.columns:
+            df["Puerto de Embarque"] = df["Puerto"]
+        if "Transportista" in df.columns:
+            df["Empresa Transportista"] = df["Transportista"]
+        if "Unitario CIF" in df.columns:
+            df["CIF (Unitario Tn)"] = df["Unitario CIF"]
+        if "Descripción" in df.columns:
+            df["Descripción de Mercadería"] = df["Descripción"]
+
+    elif pais == "Uruguay":
+        if "Unitario VNA" in df.columns:
+            df["FOB (Unitario Tn)"] = df["Unitario VNA"]
+
+    # ==== COLUMNA APLICA ====
     df["Aplica?"] = df["Toneladas Finales"].apply(lambda x: "SI" if pd.notna(x) and x >= 1 else "NO")
 
-    # Columnas faltantes
+    # ==== COMPLETAR Y REORDENAR ====
     for col in COLUMNAS_OBJETIVO:
         if col not in df.columns:
             df[col] = None
